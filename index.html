@@ -375,11 +375,22 @@
         }
 
         function formatSocialLinks(links) {
-            if (!links) return '';
-            return Object.entries(links)
-                .filter(([_, urls]) => urls && urls.length > 0)
-                .map(([platform, urls]) => `${platform}: ${urls.join(', ')}`)
-                .join('\n');
+            if (!links || links.length === 0) return 'None found';
+            
+            const socialIcons = {
+                facebook: '📘',
+                instagram: '📸',
+                linkedin: '💼',
+                twitter: '🐦',
+                youtube: '🎥',
+                tiktok: '🎵',
+                whatsapp: '💬'
+            };
+
+            return links.map(link => {
+                const icon = socialIcons[link.platform] || '🔗';
+                return `<a href="${link.url}" target="_blank" rel="noopener noreferrer">${icon} ${link.platform}</a>`;
+            }).join('<br>');
         }
 
         function downloadCSV() {
@@ -451,76 +462,52 @@
             resultsDiv.innerHTML = '';
 
             results.forEach((result, index) => {
-                const resultCard = document.createElement('div');
-                resultCard.className = 'result-card';
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result-card';
 
-                const header = document.createElement('div');
-                header.className = 'result-header';
-                header.innerHTML = `
-                    <div class="result-url">${result.url}</div>
-                    <button class="copy-site-btn" onclick="copySiteResults(${index})">Copy Results</button>
+                const hasEmails = result.emails && result.emails.length > 0;
+                const hasSocialLinks = result.socialLinks && result.socialLinks.length > 0;
+                const hasError = result.error;
+
+                let content = `
+                    <div class="result-header">
+                        <h3><a href="${result.url}" target="_blank" rel="noopener noreferrer">${result.url}</a></h3>
+                        <button onclick="copySiteResults(${index})" class="copy-site-btn">Copy Results</button>
+                    </div>
                 `;
-                resultCard.appendChild(header);
 
-                if (result.error) {
-                    const error = document.createElement('div');
-                    error.className = 'error';
-                    error.textContent = result.error;
-                    resultCard.appendChild(error);
+                if (hasError) {
+                    content += `<div class="error-message">${result.error}</div>`;
                 } else {
-                    // Emails section
-                    if (result.emails?.length) {
-                        const emailsSection = document.createElement('div');
-                        emailsSection.className = 'result-section';
-                        emailsSection.innerHTML = `
-                            <h3>Emails</h3>
-                            <div class="result-content">${result.emails.join(', ')}</div>
+                    if (hasEmails) {
+                        content += `
+                            <div class="result-section">
+                                <h4>Emails</h4>
+                                ${result.emails.join('<br>')}
+                            </div>
                         `;
-                        resultCard.appendChild(emailsSection);
                     }
 
-                    // Social Links section
-                    if (result.socialLinks) {
-                        const socialSection = document.createElement('div');
-                        socialSection.className = 'result-section';
-                        socialSection.innerHTML = '<h3>Social Links</h3>';
-                        
-                        const socialLinksDiv = document.createElement('div');
-                        socialLinksDiv.className = 'social-links';
+                    if (hasSocialLinks) {
+                        content += `
+                            <div class="result-section">
+                                <h4>Social Media</h4>
+                                ${formatSocialLinks(result.socialLinks)}
+                            </div>
+                        `;
+                    }
 
-                        const platforms = {
-                            facebook: 'Facebook',
-                            instagram: 'Instagram',
-                            linkedin: 'LinkedIn',
-                            youtube: 'YouTube',
-                            twitter: 'Twitter',
-                            tiktok: 'TikTok'
-                        };
-
-                        Object.entries(platforms).forEach(([key, label]) => {
-                            if (result.socialLinks[key]?.length) {
-                                const platformDiv = document.createElement('div');
-                                platformDiv.className = 'result-section';
-                                platformDiv.innerHTML = `
-                                    <h3>${label}</h3>
-                                    <div class="result-content">${result.socialLinks[key].join(', ')}</div>
-                                `;
-                                socialLinksDiv.appendChild(platformDiv);
-                            }
-                        });
-
-                        if (socialLinksDiv.children.length > 0) {
-                            socialSection.appendChild(socialLinksDiv);
-                            resultCard.appendChild(socialSection);
-                        }
+                    if (!hasEmails && !hasSocialLinks) {
+                        content += '<div class="no-results">No emails or social media links found</div>';
                     }
                 }
 
-                resultsDiv.appendChild(resultCard);
+                resultDiv.innerHTML = content;
+                resultsDiv.appendChild(resultDiv);
             });
 
-            document.getElementById('copyAllBtn').style.display = 'block';
-            document.getElementById('downloadBtn').style.display = 'block';
+            // Show the results container
+            document.getElementById('resultsContainer').style.display = 'block';
         }
 
         async function scrapeWebsites() {
