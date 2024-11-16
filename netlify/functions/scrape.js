@@ -205,6 +205,29 @@ function normalizeUrl(url) {
     }
 }
 
+// Add this function to filter out invalid emails
+function isValidEmail(email) {
+    // Filter out common fake emails
+    const invalidEmails = [
+        'your@email.com',
+        'name@domain.com',
+        'email@example.com',
+        'user@example.com'
+    ];
+    
+    if (invalidEmails.includes(email.toLowerCase())) {
+        return false;
+    }
+
+    // Remove common prefixes/suffixes that get accidentally included
+    email = email.replace(/[0-9-]+(?=\w+@)/, ''); // Remove numbers/dashes before email
+    email = email.replace(/(?<=@[^@]+)[0-9-]+$/, ''); // Remove numbers/dashes after email
+
+    // Basic email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+}
+
 async function scrapeUrl(url) {
     const emails = new Set();
     const socialLinks = new Map();
@@ -237,7 +260,7 @@ async function scrapeUrl(url) {
 
         const $ = cheerio.load(response.data);
 
-        // Enhanced email extraction
+        // Enhanced email extraction with better filtering
         const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
         
         // Search for emails in different places
@@ -262,15 +285,20 @@ async function scrapeUrl(url) {
                     const text = $(element).text();
                     const href = $(element).attr('href');
                     
-                    // Check text content
+                    // Check text content with improved filtering
                     const foundEmails = text.match(emailRegex) || [];
-                    foundEmails.forEach(email => emails.add(email.toLowerCase()));
+                    foundEmails.forEach(email => {
+                        const cleanEmail = email.trim().toLowerCase();
+                        if (isValidEmail(cleanEmail)) {
+                            emails.add(cleanEmail);
+                        }
+                    });
 
                     // Check href attribute
                     if (href) {
                         if (href.startsWith('mailto:')) {
-                            const email = href.replace('mailto:', '').split('?')[0].toLowerCase();
-                            if (email.match(emailRegex)) {
+                            const email = href.replace('mailto:', '').split('?')[0].toLowerCase().trim();
+                            if (isValidEmail(email)) {
                                 emails.add(email);
                             }
                         }
