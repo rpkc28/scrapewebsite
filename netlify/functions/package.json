@@ -1,0 +1,9 @@
+{
+  "name": "website-scraper-functions",
+  "version": "1.0.0",
+  "description": "Netlify functions for website scraper",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cheerio": "^1.0.0-rc.12"
+  }
+}

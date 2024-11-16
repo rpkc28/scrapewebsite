@@ -1,0 +1,17 @@
+{
+  "name": "webscraper",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "netlify dev",
+    "build": "netlify build"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "cheerio": "^1.0.0-rc.12",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.7.0"
+  }
+}

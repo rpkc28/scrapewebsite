@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Scraper</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+        }
+
+        h1 {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+            font-size: 2.25rem;
+            text-align: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            resize: vertical;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .batch-selector {
+            position: relative;
+        }
+
+        .batch-selector select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+            transition: all 0.3s ease;
+        }
+
+        .batch-selector::after {
+            content: '▼';
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+            font-size: 0.8rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        button {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .results {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .result-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .result-url {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .result-section {
+            margin-bottom: 1rem;
+        }
+
+        .result-section h3 {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .result-content {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            word-break: break-all;
+            color: var(--text-primary);
+        }
+
+        .copy-site-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-site-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .footer {
+            margin-top: 3rem;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .footer p {
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .footer .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer .social-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer .social-links a:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .coffee-btn {
+            background: linear-gradient(135deg, #f43f5e, #fb7185);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .coffee-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            animation: slideIn 0.3s ease-out;
+            z-index: 1000;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #f43f5e;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .footer .social-links {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <h1>Website Scraper</h1>
+            <textarea id="urls" placeholder="Enter URLs (one per line)&#10;Example:&#10;https://example1.com&#10;https://example2.com"></textarea>
+            <div class="controls">
+                <div class="batch-selector">
+                    <select id="batchSize">
+                        <option value="5">Process 5 at once</option>
+                        <option value="10">Process 10 at once</option>
+                        <option value="15">Process 15 at once</option>
+                        <option value="20">Process 20 at once</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button onclick="scrapeWebsites()" id="scrapeBtn">
+                        <span>Scrape Websites</span>
+                    </button>
+                    <button onclick="copyAllResults()" id="copyAllBtn" style="display: none;">
+                        Copy All
+                    </button>
+                    <button onclick="downloadCSV()" id="downloadBtn" style="display: none;">
+                        Download CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="results" class="results"></div>
+
+        <div class="footer">
+            <p>Built with ❤️ by Krishna Rathore</p>
+            <div class="social-links">
+                <a href="https://www.youtube.com/@Krishnarathore28" target="_blank">YouTube</a>
+                <a href="https://www.instagram.com/krishna.r28" target="_blank">Instagram</a>
+                <a href="https://krishnarathore.gumroad.com/" target="_blank">More Tools</a>
+            </div>
+            <a href="https://krishnarathore.gumroad.com/coffee" target="_blank" class="coffee-btn">Buy me a coffee ☕</a>
+        </div>
+    </div>
+
+    <script>
+        let scrapeResults = [];
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        async function copyToClipboard(text) {
+            await navigator.clipboard.writeText(text);
+            showToast('Copied to clipboard!');
+        }
+
+        function formatSocialLinks(links) {
+            if (!links) return '';
+            return Object.entries(links)
+                .filter(([_, urls]) => urls && urls.length > 0)
+                .map(([platform, urls]) => `${platform}: ${urls.join(', ')}`)
+                .join('\n');
+        }
+
+        function downloadCSV() {
+            const headers = ['URL', 'Emails', 'Facebook', 'Instagram', 'LinkedIn', 'YouTube', 'Twitter', 'TikTok'];
+            const rows = [headers];
+
+            scrapeResults.forEach(result => {
+                const row = [
+                    result.url,
+                    (result.emails || []).join('; '),
+                    (result.socialLinks?.facebook || []).join('; '),
+                    (result.socialLinks?.instagram || []).join('; '),
+                    (result.socialLinks?.linkedin || []).join('; '),
+                    (result.socialLinks?.youtube || []).join('; '),
+                    (result.socialLinks?.twitter || []).join('; '),
+                    (result.socialLinks?.tiktok || []).join('; ')
+                ];
+                rows.push(row);
+            });
+
+            const csvContent = rows.map(row => row.map(cell => 
+                `"${(cell || '').replace(/"/g, '""')}"`
+            ).join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'scrape_results.csv';
+            link.click();
+        }
+
+        function copyAllResults() {
+            const text = scrapeResults.map(result => {
+                let content = `URL: ${result.url}\n`;
+                if (result.error) {
+                    content += `Error: ${result.error}\n`;
+                } else {
+                    if (result.emails?.length) {
+                        content += `Emails: ${result.emails.join(', ')}\n`;
+                    }
+                    if (result.socialLinks) {
+                        content += `Social Links:\n${formatSocialLinks(result.socialLinks)}`;
+                    }
+                }
+                return content;
+            }).join('\n\n');
+
+            copyToClipboard(text);
+        }
+
+        function copySiteResults(index) {
+            const result = scrapeResults[index];
+            let text = `URL: ${result.url}\n`;
+            if (result.error) {
+                text += `Error: ${result.error}\n`;
+            } else {
+                if (result.emails?.length) {
+                    text += `Emails: ${result.emails.join(', ')}\n`;
+                }
+                if (result.socialLinks) {
+                    text += `Social Links:\n${formatSocialLinks(result.socialLinks)}`;
+                }
+            }
+            copyToClipboard(text);
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            results.forEach((result, index) => {
+                const resultCard = document.createElement('div');
+                resultCard.className = 'result-card';
+
+                const header = document.createElement('div');
+                header.className = 'result-header';
+                header.innerHTML = `
+                    <div class="result-url">${result.url}</div>
+                    <button class="copy-site-btn" onclick="copySiteResults(${index})">Copy Results</button>
+                `;
+                resultCard.appendChild(header);
+
+                if (result.error) {
+                    const error = document.createElement('div');
+                    error.className = 'error';
+                    error.textContent = result.error;
+                    resultCard.appendChild(error);
+                } else {
+                    // Emails section
+                    if (result.emails?.length) {
+                        const emailsSection = document.createElement('div');
+                        emailsSection.className = 'result-section';
+                        emailsSection.innerHTML = `
+                            <h3>Emails</h3>
+                            <div class="result-content">${result.emails.join(', ')}</div>
+                        `;
+                        resultCard.appendChild(emailsSection);
+                    }
+
+                    // Social Links section
+                    if (result.socialLinks) {
+                        const socialSection = document.createElement('div');
+                        socialSection.className = 'result-section';
+                        socialSection.innerHTML = '<h3>Social Links</h3>';
+                        
+                        const socialLinksDiv = document.createElement('div');
+                        socialLinksDiv.className = 'social-links';
+
+                        const platforms = {
+                            facebook: 'Facebook',
+                            instagram: 'Instagram',
+                            linkedin: 'LinkedIn',
+                            youtube: 'YouTube',
+                            twitter: 'Twitter',
+                            tiktok: 'TikTok'
+                        };
+
+                        Object.entries(platforms).forEach(([key, label]) => {
+                            if (result.socialLinks[key]?.length) {
+                                const platformDiv = document.createElement('div');
+                                platformDiv.className = 'result-section';
+                                platformDiv.innerHTML = `
+                                    <h3>${label}</h3>
+                                    <div class="result-content">${result.socialLinks[key].join(', ')}</div>
+                                `;
+                                socialLinksDiv.appendChild(platformDiv);
+                            }
+                        });
+
+                        if (socialLinksDiv.children.length > 0) {
+                            socialSection.appendChild(socialLinksDiv);
+                            resultCard.appendChild(socialSection);
+                        }
+                    }
+                }
+
+                resultsDiv.appendChild(resultCard);
+            });
+
+            document.getElementById('copyAllBtn').style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'block';
+        }
+
+        async function scrapeWebsites() {
+            const urlsText = document.getElementById('urls').value;
+            const urls = urlsText.split('\n').map(url => url.trim()).filter(url => url);
+            const batchSize = parseInt(document.getElementById('batchSize').value);
+
+            if (urls.length === 0) {
+                showToast('Please enter at least one URL');
+                return;
+            }
+
+            const scrapeBtn = document.getElementById('scrapeBtn');
+            const originalText = scrapeBtn.innerHTML;
+            scrapeBtn.disabled = true;
+            scrapeBtn.innerHTML = '<div class="loading"></div> Scraping...';
+
+            try {
+                const response = await fetch('/.netlify/functions/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ urls, batchSize }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to scrape websites');
+                }
+
+                if (Array.isArray(data)) {
+                    displayResults(data);
+                    
+                    // Show copy and download buttons if we have results
+                    const hasResults = data.some(result => 
+                        (result.emails && result.emails.length > 0) || 
+                        (result.socialLinks && result.socialLinks.length > 0)
+                    );
+                    
+                    if (hasResults) {
+                        document.getElementById('copyAllBtn').style.display = 'block';
+                        document.getElementById('downloadBtn').style.display = 'block';
+                    }
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                console.error('Scraping error:', error);
+                showToast(error.message || 'Failed to scrape websites');
+            } finally {
+                scrapeBtn.disabled = false;
+                scrapeBtn.innerHTML = originalText;
+            }
+        }
+    </script>
+</body>
+</html>
