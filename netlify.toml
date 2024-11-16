@@ -1,11 +1,16 @@
 [build]
-  command = "cd functions && npm install"
-  functions = "functions"
+  command = "cd netlify/functions && npm install"
+  functions = "netlify/functions"
   publish = "."
 
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["axios", "cheerio"]
+
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
 
 [[redirects]]
   from = "/*"
